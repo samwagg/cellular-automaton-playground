@@ -1,6 +1,6 @@
-# CA Playground
+# Cellular Automaton Playground
 
-A GUI for running Cellular Automaton simulations written in Clojure. Uses [quil](http://quil.info/)
+A GUI for running Cellular Automaton (CA) simulations written in Clojure. Uses [quil](http://quil.info/)
 for graphics.
 
 ## Who this is for
@@ -13,7 +13,7 @@ program to help me learn and explore celular automata.
 - Java 11
 - Clojure CLI
 ### Running with the Clojure CLI
-`clj src/artificial_life/render.clj`
+`clj -M src/ca_playground/render.clj`
 ### Usage
 You can cycle the state of individual cells by clicking them. Other operations are performed at
 the keyboard. A list of commands are rendered at the bottom of the window.
@@ -51,7 +51,13 @@ to right and top to bottom. For example, a `Game of Life` grid may look like:
 1 0 0 1 1
 ```
 
-When `:rule-fn` is invoked for the centermost cell in the above grid, the arguments will be `0` and `(1 0 0 0 1 0 0 1)`.
+When `:rule-fn` is invoked for the centermost cell in the above grid, the arguments will be `1` and `(1 0 0 0 1 0 0 1)`.
+
+## TODO
+- More tests
+- Performance optimizations (run larger grids with a reasonable frame rate).
+- Add additional options to the UI, such adjusting grid size or frame rate.
+- Add support for saving, replaying, rewinding, etc.
 
 ## License
 
