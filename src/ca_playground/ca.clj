@@ -1,5 +1,5 @@
 (ns ca-playground.ca
-  (:require [artificial-life.grid :as grid]))
+  (:require [ca-playground.grid :as grid]))
 
 (defn moore-neighborhood
   "Returns the Moore neighborhood of the cell at the given coordinates. The Moore neighborhood of a
