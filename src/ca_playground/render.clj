@@ -149,16 +149,16 @@
         [rows cols]         (grid/dims curr-grid)
         cell-height         (/ (q/height) rows)
         cell-width          (/ (q/width) cols)]
-    (doseq [row (range rows)]
-      (doseq [col (range cols)]
-        (let [color (get-in ca
-                            [:cell-states (grid/gget curr-grid [row col]) :color])
-              x     (* row cell-width) 
-              y     (* col cell-height)]
-          (q/stroke color)
-          (q/stroke-weight 2)
-          (q/fill color)
-          (q/rect x y cell-width cell-height))))
+    (doseq [row (range rows)
+            col (range cols)]
+      (let [color (get-in ca
+                          [:cell-states (grid/gget curr-grid [row col]) :color])
+            x     (* row cell-width) 
+            y     (* col cell-height)]
+        (q/stroke color)
+        (q/stroke-weight 2)
+        (q/fill color)
+        (q/rect x y cell-width cell-height)))
     (q/fill 120)
     (q/stroke 120)
     (q/stroke-weight 10)

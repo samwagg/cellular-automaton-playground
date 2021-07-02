@@ -4,15 +4,21 @@
 
 (defprotocol Grid
   "An abstraction of 2D grids. A more performant implementation of a grid is likely to be needed in
-  the future, so an abstraction via protocol seemed prudent.
+  the future, so an abstraction seemed prudent.
 
   Grids are somewhat like an associative data structure like Clojure's Vector and Map, where x,y
-  coordinates act as keys. They support some analogous functions (e.g. gget, gassoc)."
-  (dims [grid])
-  ;; 'grid get', 'grid assoc', etc.
-  (gget [grid coord])
-  (gassoc [grid coord x])
-  (subgrid [grid min-coord max-coord]))
+  coordinates act as keys. They support some analogous functions (e.g. gget, gassoc).
+
+  Coordinates are 2 element vectors of the form [num-rows num-columns]."
+  (dims [grid]
+    "Returns the dimensions of the grid in the form [n-rows n-cols]")
+  (gget [grid coord]
+    "Returns the value at the given coordinate.")
+  (gassoc [grid coord x]
+    "Returns a new grid where the value at the given coordinate is replaced by x.")
+  (subgrid [grid min-coord max-coord]
+    "Returns a new grid that is a subgrid of grid. min-coord and max-coord can be thought of as the
+    upper left corner and the bottom right corner of the subgrid."))
 
 (deftype VecGrid [vec2d]
   Grid
@@ -45,7 +51,7 @@
     (and (= VecGrid (type o))
          (= (seq this) (seq o))
          (= (dims this) (dims o))))
-  (hashCode [this]
+  (hashCode [_]
     (hash vec2d))
   (toString [_] (str (->> (map #(map pr-str %) vec2d)
                           (map #(str "|" (string/join " " %) "|"))
