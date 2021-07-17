@@ -6,7 +6,7 @@
   "An abstraction of 2D grids. A more performant implementation of a grid is likely to be needed in
   the future, so an abstraction seemed prudent.
 
-  Grids are somewhat like an associative data structure like Clojure's Vector and Map, where x,y
+  Grids are somewhat like an associative data structure like Clojure's Vector and Map, where row,col
   coordinates act as keys. They support some analogous functions (e.g. gget, gassoc).
 
   Coordinates are 2 element vectors of the form [num-rows num-columns]."

@@ -3,7 +3,9 @@
    [ca-playground.ca :as ca]
    [ca-playground.grid :as grid]
    [quil.core :as q]
-   [quil.middleware :as m]))
+   [quil.middleware :as m])
+  (:import
+   [processing.core PConstants]))
 
 (def ca-configs
   [{:name         "Game of Life"
@@ -17,7 +19,7 @@
 
 (defn init-state
   []
-  (let [init-grid (grid/vec-grid-of (repeat 0) 50 50)]
+  (let [init-grid (grid/vec-grid-of (repeat 0) 100 100)]
     {:status     :paused
      :ca-configs ca-configs
      :curr-ca    0
@@ -30,8 +32,16 @@
                     width
                     height))
 
+;; Eager generation of a seq of successive grid updates. Useful for performance testing the
+;; animation.
+#_(def coll
+  (->> (random-ca 100 100 2)
+       (iterate #(ca/update-grid % ca/game-of-life-update-fn))
+       (take 1000)
+       doall))
+
 (def key-defs
-  [{:key :space
+  [{:key  :space
     :desc "run/pause"
     :fn   (fn [state _]    
             (case (:status state)
@@ -48,27 +58,27 @@
               :running (assoc state
                          :status :paused
                          :grid-coll nil)))}
-   {:key :r
+   {:key  :r
     :desc "reset"
     :fn   (fn [state _]
             (assoc (init-state) :curr-ca (:curr-ca state)))}
-   {:key :right
+   {:key  :right
     :desc "next CA"
-    :fn  (fn [state _]
+    :fn   (fn [state _]
            (if (= :paused (:status state))
              (if (< (:curr-ca state) (dec (count (:ca-configs state))))
                (update state :curr-ca inc)
                (assoc state :curr-ca 0))
              state))}
-   {:key :left
+   {:key  :left
     :desc "previous CA"
-    :fn  (fn [state _]
+    :fn   (fn [state _]
            (if (= :paused (:status state))
              (if (= 0 (:curr-ca state))
                (assoc state :curr-ca (dec (count (:ca-configs state))))
                (update state :curr-ca dec))
              state))}
-   {:key :R
+   {:key  :R
     :desc "randomize"
     :fn   (fn [state _]
             (if (= :paused (:status state))
@@ -148,22 +158,27 @@
         ca                  (get ca-configs curr-ca)
         [rows cols]         (grid/dims curr-grid)
         cell-height         (/ (q/height) rows)
-        cell-width          (/ (q/width) cols)]
+        cell-width          (/ (q/width) cols)
+        shape-group         (.createShape (q/current-graphics) PConstants/GROUP)]
     (doseq [row (range rows)
             col (range cols)]
       (let [color (get-in ca
                           [:cell-states (grid/gget curr-grid [row col]) :color])
             x     (* row cell-width) 
-            y     (* col cell-height)]
-        (q/stroke color)
-        (q/stroke-weight 2)
+            y     (* col cell-height)
+            shape (.createShape (q/current-graphics) PConstants/RECT (into-array Float/TYPE [(float x) (float y) (float cell-width) (float cell-height)]))
+            ]
         (q/fill color)
-        (q/rect x y cell-width cell-height)))
+        (.setFill shape (.color (q/current-graphics) (first color) (second color) (last color)))
+        (.setStrokeWeight shape 2)
+        (.addChild shape-group shape)))
+    (q/shape shape-group)
     (q/fill 120)
     (q/stroke 120)
     (q/stroke-weight 10)
     (q/text-size 16)
     (q/text (format "%s. Click around to toggle cell state." (:name ca)) 20 20)
+    (q/text (format "Current frame rate: %s" (q/current-frame-rate)) 20 40)
     (q/text (str "Status: " (name status)) (- (q/width) 150) 20)
     (draw-key-help 20 (- (q/height) 150))))
 

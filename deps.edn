@@ -1,5 +1,7 @@
 {:deps {quil/quil {:mvn/version "4.0.0-SNAPSHOT-1"}}
- :aliases {:test {:extra-paths ["test"]
+ :aliases {:dev  {:extra-paths ["dev"]
+                  :extra-deps {criterium/criterium {:mvn/version "0.4.6"}}}
+           :test {:extra-paths ["test"]
                  :extra-deps {io.github.cognitect-labs/test-runner 
                               {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                :sha "705ad25bbf0228b1c38d0244a36001c2987d7337"}}
