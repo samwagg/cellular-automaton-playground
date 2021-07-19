@@ -28,12 +28,23 @@
 (defn update-grid
   "Update each cell in the grid using update-fn. update-fn is invoked with two arguments: the value of
   the current cell and the moore-neighborhood, represented as a flat seq."
-  [grid update-fn]
-  (reduce (fn [new-grid [x y v]]
-            (let [nh (moore-neighborhood grid x y)]
+  [grid updates]
+  (reduce (fn [new-grid [[row col] new-state]]
+            (let [nh (moore-neighborhood grid row col)]
               (grid/gassoc new-grid
-                [x y] (update-fn v nh))))
+                [row col] new-state)))
           grid
+          updates))
+
+(defn grid-updates
+  [grid update-fn]
+  (reduce (fn [updates [x y v]]
+            (let [nh (moore-neighborhood grid x y)
+                  new-state (update-fn v nh)]
+              (if (not= v new-state)
+                (conj updates [[x y] new-state])
+                updates)))
+          nil
           grid))
 
 (defn game-of-life-update-fn
@@ -56,3 +67,12 @@
       [0 3] 1
       [0 6] 1
       0)))
+
+
+(comment
+  ;; stable configuration results in no updates.
+  (let [grid (grid/vec-grid [[1 1 1]
+                             [1 1 1]
+                             [1 1 1]])]
+    (->> (grid-updates grid game-of-life-update-fn)
+         (update-grid grid))))
