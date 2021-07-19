@@ -101,3 +101,6 @@
        (take height)
        vec
        vec-grid))
+
+(comment
+  (dims (vec-grid-of (range) 5 2)))
