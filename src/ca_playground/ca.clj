@@ -1,51 +1,52 @@
 (ns ca-playground.ca
   (:require [ca-playground.grid :as grid]))
 
-(defn moore-neighborhood
-  "Returns the Moore neighborhood of the cell at the given coordinates. The Moore neighborhood of a
-  cell in the grid consists of the 8 adjacent cells. The Moore neighborhood is represented as a
-  flattened seq of values read from the grid in a left-to-right, top-to-bottom manner.
+(defn mod-coords
+  [[width height] [row col]]
+  [(mod row width)
+   (mod col height)])
 
-  This function treats border cells from one end of the grid as neighbors to borders cells from the
-  other end, resulting in a toroidal topoplogy."
-  [grid row col]
-  (let [[width height] (grid/dims grid)
-        mod-coords     (fn [[row col]]
-                         [(mod row width)
-                          (mod col height)])
-        neigh-coords   [[(dec row) (dec col)]
-                        [(dec row) col]
-                        [(dec row) (inc col)]
-                        [row (dec col)]
-                        [row (inc col)]
-                        [(inc row) (dec col)]
-                        [(inc row) col]
-                        [(inc row) (inc col)]]]
-    (map (fn [coords]
-           (grid/gget grid (mod-coords coords)))
-         neigh-coords)))
+(defn moore-neighborhood-with-wrap
+  [[row col] grid-dims]
+  (mapv (partial mod-coords grid-dims)
+        [[(dec row) (dec col)]
+         [(dec row) col]
+         [(dec row) (inc col)]
+         [row (dec col)]
+         [row (inc col)]
+         [(inc row) (dec col)]
+         [(inc row) col]
+         [(inc row) (inc col)]]))
 
-(defn update-grid
-  "Update each cell in the grid using update-fn. update-fn is invoked with two arguments: the value of
-  the current cell and the moore-neighborhood, represented as a flat seq."
-  [grid updates]
-  (reduce (fn [new-grid [[row col] new-state]]
-            (let [nh (moore-neighborhood grid row col)]
-              (grid/gassoc new-grid
-                [row col] new-state)))
-          grid
-          updates))
+;; TODO: Can producing dups and then deduping be avoided?
+;; TODO: is there a better name for this function? Maybe
+;;       there's a name for the neighbors of a list of coordinates?
+(defn potential-updates
+  "Given the dimensions of the grid, the list of coordinates that were updated at the previous time
+  step, and the neighbordhood function that is in use, returns a comprehensive list of coordinates
+  that could potentially have updates at the next time step."
+  [grid-dims prev-update-coords neighborhood-fn]
+  (set (mapcat (fn [coord]
+                 (neighborhood-fn coord grid-dims))
+               prev-update-coords)))
 
 (defn grid-updates
-  [grid update-fn]
-  (reduce (fn [updates [x y v]]
-            (let [nh (moore-neighborhood grid x y)
-                  new-state (update-fn v nh)]
-              (if (not= v new-state)
-                (conj updates [[x y] new-state])
-                updates)))
-          nil
-          grid))
+  "Return the list of updates for the next timestep for the CA according to update-fn. Optionally, for
+  improved performance, takes a seq of prev-update-coords: the comprehensive list of coordinates
+  that were updated at the previous timestep."
+  ([grid update-fn prev-update-coords]
+   (reduce (fn [updates coord]
+             (let [value     (grid/gget grid coord)
+                   neighbors (map (partial grid/gget grid)
+                                  (moore-neighborhood-with-wrap coord (grid/dims grid)))
+                   new-state (update-fn value neighbors)]
+               (if (not= value new-state)
+                 (conj updates [coord new-state])
+                 updates)))
+           nil
+           (potential-updates (grid/dims grid) prev-update-coords moore-neighborhood-with-wrap)))
+  ([grid update-fn]
+   (grid-updates grid update-fn (map butlast grid))))
 
 (defn game-of-life-update-fn
   [value neighborhood]
@@ -67,12 +68,3 @@
       [0 3] 1
       [0 6] 1
       0)))
-
-
-(comment
-  ;; stable configuration results in no updates.
-  (let [grid (grid/vec-grid [[1 1 1]
-                             [1 1 1]
-                             [1 1 1]])]
-    (->> (grid-updates grid game-of-life-update-fn)
-         (update-grid grid))))

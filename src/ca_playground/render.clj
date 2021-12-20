@@ -61,9 +61,15 @@
 
 (defn gen-ca-coll
   [init-grid update-fn]
-  (iterate (fn [[grid _]]
-             (let [updates  (ca/grid-updates grid update-fn)
-                   new-grid (ca/update-grid grid updates)]
+  (iterate (fn [[grid prev-updates]]
+             (let [updates  (if prev-updates
+                              (ca/grid-updates grid update-fn (map first prev-updates))
+                              (ca/grid-updates grid update-fn))
+                   new-grid (reduce (fn [new-grid [[row col] new-state]]
+                                      (grid/gassoc new-grid
+                                                   [row col] new-state))
+                                    grid
+                                    updates)]
                [new-grid updates]))
            [init-grid nil]))
 

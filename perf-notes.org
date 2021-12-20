@@ -90,5 +90,12 @@ lots of small shapes. I can also consider using an alternative graphics library,
 *** Findings
 Creating a new shape by grouping rectangles is slightly faster than drawing each rectangle
 separately. 5 FPS vs. 3.75 FPS for 100 X 100 grid.
-
-
+** Only draw updates (when possible)
+   This made a huge difference. The exact frame rate now varies depending on how many cells have
+   changed per timestep. For a 100X100 grid with a randomized start, the frame rate is still very
+   slow at about 3 frames/sec. But after things settle down the frame rate rises to about 15 fps,
+   which my benchmarks showed to be the maximum possible frame rate when iterating through all 10000
+   cells.
+** Only check for updates in cells that are in the neighborhood of cells that were updated at the previous timestep.
+   This results in a massive FPS improvement at larger grid sizes, especially when the number of
+   updates per timestep is relatively low. For example, a 250X250 grid with a single glider ran at ~200 FPS.

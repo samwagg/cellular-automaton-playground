@@ -39,6 +39,7 @@
                        (vec (for [j (range col-min (inc col-max))
                                   :while (< j cols)]
                               (gget this [i j]))))))))
+  ;; TODO: why did I make each element a flat vector? Wouldn't [[x y] val] be better? 
   clojure.lang.Seqable
   (seq [this]
     (let [[_ cols] (dims this)]
