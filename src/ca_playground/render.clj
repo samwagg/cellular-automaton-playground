@@ -101,22 +101,6 @@
               :running (assoc state
                          :status :paused
                          :grid-coll nil)))}
-   {:key  :right
-    :desc "next CA"
-    :fn   (fn [state _]
-           (if (= :paused (:status state))
-             (if (< (:curr-ca state) (dec (count (:ca-configs state))))
-               (update state :curr-ca inc)
-               (assoc state :curr-ca 0))
-             state))}
-   {:key  :left
-    :desc "previous CA"
-    :fn   (fn [state _]
-           (if (= :paused (:status state))
-             (if (= 0 (:curr-ca state))
-               (assoc state :curr-ca (dec (count (:ca-configs state))))
-               (update state :curr-ca dec))
-             state))}
    {:key :up
     :desc "increase framerate"
     :fn   (fn [state _]
@@ -165,8 +149,24 @@
               (assoc state
                 :curr-grid (random-ca width height n-states)
                 :curr-updates nil)))}
+   {:key  :right
+    :desc "next CA"
+    :fn   (fn [state _]
+           (if (= :paused (:status state))
+             (if (< (:curr-ca state) (dec (count (:ca-configs state))))
+               (update state :curr-ca inc)
+               (assoc state :curr-ca 0))
+             state))}
+   {:key  :left
+    :desc "previous CA"
+    :fn   (fn [state _]
+           (if (= :paused (:status state))
+             (if (= 0 (:curr-ca state))
+               (assoc state :curr-ca (dec (count (:ca-configs state))))
+               (update state :curr-ca dec))
+             state))}
    {:key  :h
-    :desc "Hide overlays"
+    :desc "hide overlays"
     :fn   (fn [state _]
             (-> (assoc state :overlay-update-counter 2)
                 (update :overlay-visible? not)))}])
@@ -246,7 +246,7 @@
   [x y]
   (let [[key-str desc-str]
         (reduce (fn [[key-str desc-str] key-def]
-                  [(str key-str (:key key-def) "\n")
+                  [(str key-str (name (:key key-def)) "\n")
                    (str desc-str (:desc key-def) "\n")])
                 ["" ""]
                 key-defs)]
@@ -255,9 +255,8 @@
     (q/fill 0)
     (q/rect x (- y 20) 250 250)
     (q/fill 255)
-    (q/text "KEYS\n" (+ x 15) y)
-    (q/text key-str (+ x 15) (+ y 15))
-    (q/text desc-str (+ x 125) (+ y 15))))
+    (q/text key-str (+ x 15) y)
+    (q/text desc-str (+ x 125) y)))
 
 (defn draw-fresh-grid
   [grid colors]
