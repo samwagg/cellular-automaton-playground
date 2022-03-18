@@ -124,13 +124,12 @@
    {:key :down
     :desc "decrease framerate"
     :fn   (fn [state _]
-            (if (> (:target-frame-rate state) 0)
+            (if (< 1 (:target-frame-rate state))
               (update state :target-frame-rate dec)
               state))}
    {:key :+
     :desc "increase grid size"
     :fn    (fn [state _]
-             (println "here")
              (let [{:keys [curr-grid]} state
                    [rows cols]         (grid/dims curr-grid)
                    grid                (supergrid curr-grid (inc rows) (inc cols) 0)]
