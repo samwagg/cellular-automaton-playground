@@ -10,10 +10,10 @@
 (def init-frame-rate 15)
 
 (def ca-configs
-  [{:name         "Game of Life"
-    :cell-states  [{:color [255 255 255]}
-                   {:color [0 0 0]}]
-    :rule-fn      ca/game-of-life-update-fn}
+  [{:name        "Game of Life"
+    :cell-states [{:color [255 255 255]}
+                  {:color [0 0 0]}]
+    :rule-fn     ca/game-of-life-update-fn}
    {:name        "Highlife"
     :cell-states [{:color [255 255 255]}
                   {:color [0 0 0]}]
@@ -26,13 +26,13 @@
 (defn init-state
   []
   {:target-frame-rate init-frame-rate
-   :status     :paused
-   :ca-configs ca-configs
-   :curr-ca    0
-   :curr-grid  (init-grid 50 50)
-   :curr-updates nil
-   :grid-coll  nil
-   :overlay-visible? true})
+   :status            :paused
+   :ca-configs        ca-configs
+   :curr-ca           0
+   :curr-grid         (init-grid 50 50)
+   :curr-updates      nil
+   :grid-coll         nil
+   :overlay-visible?  true})
 
 (defn random-ca
   [width height n-states]
@@ -94,7 +94,7 @@
                              update-fn (curr-ca-fn state)
                              grid-coll (gen-ca-coll grid update-fn)]
                          (assoc state
-                           :status    :running
+                           :status :running
                            :curr-grid grid
                            :curr-updates nil
                            :grid-coll grid-coll))
@@ -206,24 +206,23 @@
   (let [key-map (->> key-defs
                      (map (juxt :key identity))
                      (into {}))
-        f (get-in key-map [(:key event) :fn])]
+        f       (get-in key-map [(:key event) :fn])]
     (if f (f state event) state)))
 
 (defn update-state
   [{:keys [status grid-coll overlay-visible? prev-overlay-visible? redraw?] :as state}]
   (let [state' (cond-> state
-                 redraw? (assoc :redraw? false)
+                 redraw?                     (assoc :redraw? false)
                  (and (not overlay-visible?)
                       prev-overlay-visible?) (assoc :redraw? true)
-                 true (assoc :prev-overlay-visible? overlay-visible?))]
+                 true                        (assoc :prev-overlay-visible? overlay-visible?))]
     (case status
       :paused  state'
       :running (let [[grid updates] (first grid-coll)]
                  (-> state'
                      (assoc :curr-grid grid
                             :curr-updates updates)
-                     (update :grid-coll next)
-                 )))))
+                     (update :grid-coll next))))))
 
 (defn draw-header
   [status ca-name grid-size]
@@ -270,8 +269,12 @@
       (let [color (get colors (grid/gget grid [row col]))
             x     (* row cell-width) 
             y     (* col cell-height)
-            shape (.createShape (q/current-graphics) PConstants/RECT (into-array Float/TYPE [(float x) (float y) (float cell-width) (float cell-height)]))
-            ]
+            shape (.createShape (q/current-graphics)
+                                PConstants/RECT
+                                (into-array Float/TYPE [(float x)
+                                                        (float y)
+                                                        (float cell-width)
+                                                        (float cell-height)]))]
         (q/fill color)
         (.setFill shape (.color (q/current-graphics) (first color) (second color) (last color)))
         (.setStroke shape (q/color 0 0 0))
@@ -290,7 +293,12 @@
             [row col] coord
             x         (* row cell-width) 
             y         (* col cell-height)
-            shape     (.createShape (q/current-graphics) PConstants/RECT (into-array Float/TYPE [(float x) (float y) (float cell-width) (float cell-height)]))]
+            shape     (.createShape (q/current-graphics)
+                                    PConstants/RECT
+                                    (into-array Float/TYPE [(float x)
+                                                            (float y)
+                                                            (float cell-width)
+                                                            (float cell-height)]))]
         (q/fill color)
         (.setFill shape (.color (q/current-graphics) (first color) (second color) (last color)))
         (.setStroke shape (q/color 0 0 0))
@@ -300,7 +308,6 @@
 
 (defn draw
   [state]
-  (q/stroke 120)
   (let [{:keys [status
                 target-frame-rate
                 ca-configs
@@ -309,8 +316,9 @@
                 curr-updates
                 redraw?
                 overlay-visible?]} state
-        ca                  (get ca-configs curr-ca)
-        colors              (mapv :color (:cell-states ca))]
+        ca                         (get ca-configs curr-ca)
+        colors                     (mapv :color (:cell-states ca))]
+    (q/stroke 120)
     (q/frame-rate target-frame-rate)
     (if (and curr-updates (not redraw?))
       (draw-grid-updates (grid/dims curr-grid) curr-updates colors)
