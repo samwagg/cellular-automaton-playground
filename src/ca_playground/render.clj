@@ -160,7 +160,7 @@
                                               (:curr-ca state)
                                               :cell-states])
                                      count)]
-              (assoc (init-state)
+              (assoc state
                 :curr-grid (random-ca width height n-states)
                 :curr-updates nil)))}
    {:key  :h
