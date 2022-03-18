@@ -140,13 +140,15 @@
    {:key  :-
     :desc "decrease grid size"
     :fn   (fn [state _]
-            (let [{:keys [curr-grid]} state
-                  [rows cols]         (grid/dims curr-grid)
-                  grid                (grid/subgrid curr-grid [0 0] [(- rows 2) (- cols 2)])]
-              (assoc state
-                :curr-updates nil
-                :curr-grid grid
-                :grid-coll (gen-ca-coll grid (curr-ca-fn state)))))}
+            (let [curr-grid   (:curr-grid  state)
+                  [rows cols] (grid/dims curr-grid)]
+              (if-not (< 1 rows)
+                state
+                (let [grid (grid/subgrid curr-grid [0 0] [(- rows 2) (- cols 2)])]
+                  (assoc state
+                    :curr-updates nil
+                    :curr-grid grid
+                    :grid-coll (gen-ca-coll grid (curr-ca-fn state)))))))}
    {:key  :r
     :desc "reset"
     :fn   (fn [state _] (reset state))}
